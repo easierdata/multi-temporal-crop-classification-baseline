@@ -1,10 +1,10 @@
-
 # Custom dataset params
-src_dir: /home/data
-train_dataset_name: chips_filtered_13_classes_complete
-train_csv_path: /home/workdir/train_ids.csv
-val_csv_path: /home/workdir/val_ids.csv
-test_csv_path: /home/workdir/test_ids.csv
+src_dir: /path/to/directory/with/training/datasets
+train_dataset_name: Enter dataset name
+train_csv_path: /path/to/csv/file/with/chip_ids.csv
+val_csv_path: /path/to/csv/file/with/chip_ids.csv
+test_csv_path: /path/to/csv/file/with/chip_ids.csv
+
 apply_normalization: true
 normal_strategy: z_value
 stat_procedure: gpb
@@ -14,10 +14,10 @@ global_stats:
   mean: [494.905781, 815.239594, 924.335066, 2968.881459, 2634.621962, 1739.579917]
   std: [284.925432, 357.84876, 575.566823, 896.601013, 951.900334, 921.407808]
 transformations:
-- v_flip
-- h_flip
-- d_flip
-- rotate
+  - v_flip
+  - h_flip
+  - d_flip
+  - rotate
 aug_params:
   rotation_degree: [-180, -90, 90, 180]
 
@@ -33,8 +33,8 @@ use_skipAtt: false
 train_dropout_rate: 0.15
 
 # Model compiler params
-working_dir: /home/workdir
-out_dir: output6
+working_dir: /path/to/working/directory
+out_dir: <Name of directory to store output>
 class_mapping:
   0: Unknown
   1: Natural Vegetation
@@ -51,19 +51,19 @@ class_mapping:
   12: Sorghum
   13: Other
 gpuDevices:
-- 0
+  - 0
 init_type: kaiming
 params_init: null
 freeze_params: null
 
 # Model fitting
-epochs: 100
+epochs: 1
 optimizer: sam
 LR: 0.011
 LR_policy: PolynomialLR
 criterion:
-    name: TverskyFocalLoss
-    weight:
+  name: TverskyFocalLoss
+  weight:
     - 0.0182553
     - 0.03123664
     - 0.02590038
@@ -77,8 +77,8 @@ criterion:
     - 0.1447082
     - 0.17132445
     - 0.0566358
-    ignore_index: 0
-    gamma: 0.9
+  ignore_index: 0
+  gamma: 0.9
 
 momentum: 0.95
 checkpoint_interval: 20
@@ -88,13 +88,13 @@ lr_prams:
   # StepLR & MultiStepLR
   step_size: 3
   milestones:
-  - 5
-  - 10
-  - 20
-  - 35
-  - 50
-  - 70
-  - 90
+    - 5
+    - 10
+    - 20
+    - 35
+    - 50
+    - 70
+    - 90
   gamma: 0.98
   # ReduceLROnPlateau
   mode: triangular
@@ -111,8 +111,6 @@ lr_prams:
   base_lr: 3.0e-05
   max_lr: 0.01
   step_size_up: 1100
-  
+
 # Accuracy assessment
 val_metric_fname: validate_metrics_global_z_gpb.csv
-
-
