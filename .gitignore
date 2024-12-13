@@ -5,3 +5,4 @@ src/**/__pycache__/
 notebooks/**/*.ipynb_checkpoints/
 output*/
 **/.DS_Store
+.venv
