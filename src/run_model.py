@@ -216,12 +216,6 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    # yaml_config_path = Path(args.config).resolve()
-    yaml_config_path = (
-        Path(
-            r"C:\github\client_projects\umd\multi-temporal-crop-classification-baseline\config\default_config.yaml"
-        )
-        .resolve()
-        .as_posix()
-    )
+    yaml_config_path = Path(args.config).resolve()
+
     main(yaml_config_path, args.num_time_points, args.mode)
