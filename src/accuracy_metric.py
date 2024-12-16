@@ -18,11 +18,26 @@ class Evaluator(object):
 
     def overall_accuracy(self):
         acc = np.diag(self.confusion_matrix).sum() / self.confusion_matrix.sum()
+        # acc = np.where(
+        #     self.confusion_matrix.sum() != 0,
+        #     np.diag(self.confusion_matrix).sum() / self.confusion_matrix.sum(),
+        #     0,
+        # )
+        # if necessary, replace NaN values with 0 (or some other value or handling mechanism)
+        # if np.isnan(acc):
+        #     acc = 0
         return acc
-
 
     def classwise_overal_accuracy(self):
         acc = np.diag(self.confusion_matrix) / self.confusion_matrix.sum(axis=1)
+        # acc = np.where(
+        #     self.confusion_matrix.sum(axis=1) != 0,
+        #     np.diag(self.confusion_matrix) / self.confusion_matrix.sum(axis=1),
+        #     0,
+        # )
+        # if necessary, replace NaN values with 0 (or some other value or handling mechanism)
+        # if np.isnan(acc):
+        #     acc = 0
         return acc
 
 
@@ -32,11 +47,10 @@ class Evaluator(object):
         """
         tp = np.diag(self.confusion_matrix)
         fp = np.sum(self.confusion_matrix, axis=0) - tp
-        precision = np.where((tp + fp) != 0,
-                             tp / (tp + fp),
-                             0)
+        # if necessary, replace NaN values with 0 (or some other value or handling mechanism)
+        # if np.isnan(precision):
+        #     precision = 0
         return precision
-
 
     def recall(self):
         """
@@ -45,11 +59,11 @@ class Evaluator(object):
         """
         tp = np.diag(self.confusion_matrix)
         fn = np.sum(self.confusion_matrix, axis=1) - tp
-        recall = np.where((tp + fn) != 0,
-                          tp / (tp + fn),
-                          0)
+        # if necessary, replace NaN values with 0 (or some other value or handling mechanism)
+        # if np.isnan(recall):
+        #     recall = 0
         return recall
-    
+
     def f1_score(self):
         """
         Also known as balanced F-score or F-measure.
@@ -59,11 +73,10 @@ class Evaluator(object):
         """
         precision = self.precision()
         recall = self.recall()
-        f1_score = np.where((precision + recall) != 0, 
-                        2 * (precision * recall) / (precision + recall), 
-                        0)
+        # if necessary, replace NaN values with 0 (or some other value or handling mechanism)
+        # if np.isnan(precision):
+        #     precision = 0
         return f1_score
-
 
     def intersection_over_union(self):
         tp = np.diag(self.confusion_matrix)
@@ -71,11 +84,10 @@ class Evaluator(object):
         fp = np.sum(self.confusion_matrix, axis=0) - tp
         # Actual Positive (TP+FN); each row's sum
         fn = np.sum(self.confusion_matrix, axis=1) - tp
-        iou = np.where((tp + fp + fn) != 0,
-                       tp / (tp + fp + fn),
-                       0)
+        # if necessary, replace NaN values with 0 (or some other value or handling mechanism)
+        # if np.isnan(iou):
+        #     iou = 0
         return iou
-
 
     def _generate_matrix(self, ref_img, pred_img):
         """
