@@ -459,6 +459,9 @@ class ModelCompiler:
         # Prepend the output directory to the filename
         filename = Path(output_dir, filename).resolve()
 
+        do_accuracy_evaluation(
+            self.model, eval_dataset, self.num_classes, self.class_mapping, filename
+        )
 
         duration_in_sec = (datetime.now() - start).seconds
         print(f"---------------- Evaluation finished in {duration_in_sec}s ----------------")
