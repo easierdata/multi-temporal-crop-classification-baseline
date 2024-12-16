@@ -222,10 +222,12 @@ def do_accuracy_evaluation(model, dataloader, num_classes, class_mapping, out_na
     }
 
     # print confusion matrix
-    evaluator.plot_confusion_matrix(class_mapping)
-    
+    evaluator.plot_confusion_matrix(
+        class_mapping, save_path=Path(out_name).parent / "confusion_matrix.png"
+    )
+
     if out_name:
-        with open(out_name, mode="w", newline='') as file:
+        with open(out_name, mode="w", newline="") as file:
             writer = csv.writer(file)
             writer.writerow(["Metric", "Value"])
 
