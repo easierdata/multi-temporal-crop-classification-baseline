@@ -239,12 +239,23 @@ def do_accuracy_evaluation(model, dataloader, num_classes, class_mapping, out_na
             out_name.stem + "_classwise" + out_name.suffix
         )
 
+        with open(class_metrics_out_name, mode="w", newline="") as file:
             writer = csv.writer(file)
-            writer.writerow(["Class", "Accuracy", "IoU", "Precision", "Recall", "F1 Score"])
+            writer.writerow(
+                ["Class", "Accuracy", "IoU", "Precision", "Recall", "F1 Score"]
+            )
 
             for i in range(1, evaluator.num_class):
                 class_name = class_mapping[i]
-                writer.writerow([class_name, classwise_overal_accuracy[i], IoU[i], 
-                                 precision[i], recall[i], f1_score[i]])
-    
+                writer.writerow(
+                    [
+                        class_name,
+                        classwise_overal_accuracy[i],
+                        IoU[i],
+                        precision[i],
+                        recall[i],
+                        f1_score[i],
+                    ]
+                )
+
     return metrics
