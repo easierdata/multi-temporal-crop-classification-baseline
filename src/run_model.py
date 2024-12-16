@@ -37,6 +37,7 @@ def load_config(yaml_config_path, num_time_points):
         "train_csv_path",
         "test_csv_path",
         "validation_csv_path",
+        "tensorboard_log_path",
     ]
     for key in keys_with_paths:
         config[key] = Path(config[key]).resolve().as_posix()
@@ -44,7 +45,9 @@ def load_config(yaml_config_path, num_time_points):
     if config["params_init"]:
         config["params_init"] = Path(config["params_init"]).resolve().as_posix()
 
-    # If global_stats is true, ensure that each value in the dictionary list value is an array
+    # Initialize the SummaryWriter by setting the directory where to save the event files
+    # The events.out.tfevents files are created by TensorBoard to log events from all training events
+    writer = SummaryWriter(log_dir=config["tensorboard_log_path"])
 
     return config
 
