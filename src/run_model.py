@@ -35,7 +35,7 @@ def load_config(yaml_config_path, num_time_points):
     keys_with_paths = [
         "dataset_path",
         "train_csv_path",
-        "test_csv_path",
+        "inference_csv_path",
         "validation_csv_path",
         "tensorboard_log_path",
     ]

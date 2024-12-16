@@ -10,7 +10,7 @@ dataset_path: /path/to/training/dataset/directory
 dataset_dir: Enter name of the directory containing the images
 train_csv_path: /path/to/csv/file/with/chip_ids/filename.csv
 validation_csv_path: /path/to/csv/file/with/chip_ids/filename.csv
-test_csv_path: /path/to/csv/file/with/chip_ids/filename.csv
+inference_csv_path: /path/to/csv/file/with/chip_ids/filename.csv
 
 apply_normalization: true
 normal_strategy: z_value
