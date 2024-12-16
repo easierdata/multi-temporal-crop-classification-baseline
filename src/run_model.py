@@ -33,7 +33,7 @@ def load_config(yaml_config_path, num_time_points):
         config["global_stats"][key] = value * num_time_points
 
     keys_with_paths = [
-        "src_dir",
+        "dataset_path",
         "train_csv_path",
         "test_csv_path",
         "validation_csv_path",
@@ -54,9 +54,9 @@ def load_config(yaml_config_path, num_time_points):
 
 def prepare_data(config, usage):
     dataset = CropData(
-        src_dir=config["src_dir"],
+        src_dir=config["dataset_path"],
         usage=usage,
-        dataset_name=config["train_dataset_name"],
+        dataset_name=config["dataset_dir"],
         csv_path=config[f"{usage}_csv_path"],
         apply_normalization=config["apply_normalization"],
         normal_strategy=config["normal_strategy"],
