@@ -32,7 +32,11 @@ pip install -r requirements.txt
 
 A configuration file, found [here](./config/default_config.yaml), is used to customize various model properties and features for model training, evaluation, and inference. The `custom dataset params` section in the configuration file is used to specify the dataset path, batch size, and other dataset-related parameters. Supply a `dataset_path` containing your dataset content and the `dataset_dir` containing the images to be used for training, validation, or inference.
 
-> :white_check_mark: It's important to note that the imagery that is sent through the pipeline must be preprocessed with two files per chip and must be named. More details on the preprocessing can be found [here](https://github.com/easierdata/multi-temporal-crop-classification-training-data/blob/main/doc/Training%20Data%20Overview.md#import-saved-dataframe-files-and-preparing-tile-chipping-process).
+> :white_check_mark: It's important to note that the data sent through the pipeline must be preprocessed. Two files are expected for each chip:
+> 1. Three HLS scenes merged together, with a naming convention of `chip_xxx_xxx_merged.tif`
+> 2. Label chip contaning reclassified CDL crop types (13 classes total), with a naming convention of `chip_xxx_xxx.mask.tif:`
+> 
+> More details on the preprocessing can be found [here](https://github.com/easierdata/multi-temporal-crop-classification-training-data/doc/Training%20Data%20Overview.md#import-saved-dataframe-files-and-preparing-tile-chipping-process).
 
 ### Running the pipeline in different modes
 
