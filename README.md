@@ -1,48 +1,72 @@
 # Baseline Model for Segmentation Fine-Tuning of the HLS Foundation Model
-This repo contains the code, performance metrics and trained model weights for a supervised CNN model as the baseline for multi-temporal crop type segmentation fine-tuning of the HLS Foundation Model (FM). The FM is released by NASA and IBM [here](https://huggingface.co/ibm-nasa-geospatial), and the fine-tuned FM model for this task is presented [here](https://huggingface.co/ibm-nasa-geospatial/Prithvi-100M-multi-temporal-crop-classification). You can also access the training dataset for this task [here](https://huggingface.co/datasets/ibm-nasa-geospatial/multi-temporal-crop-classification). 
 
-This project is funded by an award from NASA to the Center for Geospatial Analytics at Clark University. 
+This repo, a revision originally [based](https://github.com/ClarkCGA/multi-temporal-crop-classification-training-data) from [Clark Center for Geospatial Analytics](https://www.clarku.edu/centers/geospatial-analytics/), to run a supervised CNN model pipeline for multi-temporal crop type segmentation, based on the HLS Foundation Model (FM). The FM is released by NASA and IBM [here](https://huggingface.co/ibm-nasa-geospatial), and the fine-tuned FM model for this task is presented [here](https://huggingface.co/ibm-nasa-geospatial/Prithvi-100M-multi-temporal-crop-classification).
 
-## Instructions to run the code using Docker:
+The pipeline includes, model training, evaluation, and inference, for data generated in the [multi-temporal-crop-classification-training-data](https://github.com/easierdata/multi-temporal-crop-classification-training-data).
 
-**Step 1-** Change directory to an empty folder in your machine and clone the repo.
+## Prerequisites
+
+To get started:
+
+1. change directory to an empty folder in your machine and clone the repo.
+
 ```
 $ cd /to_empty/dir/on_host/
 
-$ git clone  git@github.com:ClarkCGA/multi-temporal-crop-classification-baseline.git
+$ git clone https://github.com/easierdata/multi-temporal-crop-classification-baseline
 
 $ cd path/to/cloned directory/
 ```
 
-**Step 2-** Make sure the Docker daemon is running and build the Docker image as following:
-```
-$ docker build -t <image_name>:<tag> .
-```
-Example:
-```
-$ docker build -t semseg_baseline:v1 .
-```
+2. create a virtual environment and install the required dependencies.
 
-**step 3-** Run the Docker image as a container from within the cloned folder:
-```
-$ docker run --gpus all -it -p 8888:8888 -v <path/to/the/cloned-repo/on-host>:/home/workdir -v <path/to/the/dataset/on-host>:/home/data  <image_name>:<tag>
+```shell
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 ```
 
-This command will start a container based on the specified Docker image and starts a JupyterLab session. Type `localhost:8888` in your browser and copy the provided token from the terminal to open the JupyterLab.
+## Running Model Pipeline
 
-**step 4-** Run the pipeline:
+### Configuring pipeline parameters
 
-Open the jupyter notebook located at `notebooks/main.ipynb`.
+A configuration file, found [here](./config/default_config.yaml), is used to customize various model properties and features for model training, evaluation, and inference. The `custom dataset params` section in the configuration file is used to specify the dataset path, batch size, and other dataset-related parameters. Supply a `dataset_path` containing your dataset content and the `dataset_dir` containing the images to be used for training, validation, or inference.
 
-Modify the "default_config.yaml" or create your own config file and run the cells as explained in the notebook.
+> :white_check_mark: It's important to note that the imagery that is sent through the pipeline must be preprocessed with two files per chip and must be named. More details on the preprocessing can be found [here](https://github.com/easierdata/multi-temporal-crop-classification-training-data/blob/main/doc/Training%20Data%20Overview.md#import-saved-dataframe-files-and-preparing-tile-chipping-process).
 
-## Model Weights
-The model weights trained on the dataset for 100 epochs with the parameters specified in the "default_config.yaml", is stored in the `model_weights/multi_temporal_crop_classification.pth`. Instructions to load and use the pre-trained model for zero-shot inference or warm-up training is explained in the notebook.
+### Running the pipeline in different modes
 
-# Evaluation metrics:
-![Confusion Matrix](_media/confusion_matrix.png)   
- 
-## Overall Metrics:
+Run the pipeline by executing the following command and passing in one of the following modes: `train`, `validation`, or `inference`.
+
+```shell
+python ./src/run_model.py --config_file <path_to_config_file> <mode>
+```
+
+> By default, the configuration file is set to `config/default_config.yaml`. You can specify a different configuration file by providing the path to the file using the `--config_file` argument.
+
+The results of the pipeline will be saved to a directory, as specified by the `working_dir` parameter in the configuration file. The results include:
+
+##### **Predictions**
+
+Running the pipeline in `inference` mode will generate and save the predictions to the `working_dir` directory.
+
+##### **Model Checkpoints**
+
+The model checkpoints are saved to the `output_dir` directory. Model checkpoints represent the number of epochs the model has been trained on and are saved based on the `checkpoint` parameter in the configuration file. Files are saved in the format `model_epoch_<epoch_number>.pth.tar`.
+
+##### **Model Params**
+
+The model parameters are saved to the `output_dir` directory after a model has finished training. Running the `save` in the [ModelCompiler Class](./src/model_compiler.py/) The model parameters are saved in the format `model_params_epoch_<epoch_number>.pth`. The model parameters can be loaded and used for inference or warm-up training by passing in the file path to the `params_init` parameter in the configuration file.
+
+##### **Evaluation metrics**
+
+Example below of the metrics generated from the pipeline:
+
+![Confusion Matrix](_media/confusion_matrix.png)
+
+and two CSV files containing the evaluation metrics and the model predictions.
+
+##### **Overall Metrics**
 
 |Metric          |Value   |
 |----------------|--------|
@@ -53,7 +77,7 @@ The model weights trained on the dataset for 100 epochs with the parameters spec
 |mean Recall     |0.57492 |
 |Mean F1 Score   |0.57251 |
 
-## Class-wise Metrics:
+##### **Class-wise Metrics**
 
 |Class               | Accuracy   |IoU         |Precision  |Recall       |F1 Score    |
 |--------------------|------------|------------|-----------|-------------|------------|
@@ -71,7 +95,44 @@ The model weights trained on the dataset for 100 epochs with the parameters spec
 |Sorghum             |0.6152      |0.3909      |0.5174     |0.6152       |0.5621      |
 |Other               |0.4589      |0.3268      |0.5316     |0.4589       |0.4926      |
 
+### Running the pipeline from Jupyter Notebook
 
+You can also run the pipeline from a Jupyter Notebook to walk through the different steps in running a model. 
 
+Execute the following command:
 
+```shell
+jupyter notebook
+```
 
+Then navigate to the `notebooks` directory and open the `main.ipynb` notebook. Follow the instructions in the notebook to run the pipeline
+
+## Instructions to run the code using Docker
+
+**Step 1** Make sure the Docker daemon is running and build the Docker image as following:
+
+``` bash
+$ docker build -t <image_name>:<tag> .
+```
+
+Example:
+
+``` bash
+$ docker build -t semseg_baseline:v1 .
+```
+
+**step 2-** Run the Docker image as a container from within the cloned folder:
+
+``` bash
+$ docker run --gpus all -it -p 8888:8888 -v <path/to/the/cloned-repo/on-host>:/home/workdir -v <path/to/the/dataset/on-host>:/home/data  <image_name>:<tag>
+```
+
+This command will start a container based on the specified Docker image and starts a JupyterLab session. Type `localhost:8888` in your browser and copy the provided token from the terminal to open the JupyterLab.
+
+**step 3-** Run the pipeline:
+
+Modify the "default_config.yaml" or create your own config file and run the cells as explained in the notebook.
+
+## Model Weights
+
+The model weights trained on the dataset for 100 epochs with the parameters specified in the "default_config.yaml", is stored in the `model_weights/multi_temporal_crop_classification.pth`. Instructions to load and use the pre-trained model for zero-shot inference or warm-up training is explained in the notebook.
