@@ -233,9 +233,12 @@ def do_accuracy_evaluation(model, dataloader, num_classes, class_mapping, out_na
 
             for metric_name, metric_value in metrics.items():
                 writer.writerow([metric_name, metric_value])
-        
-        class_metrics_out_name = out_name.rsplit(".", 1)[0] + "_classwise." + out_name.rsplit(".", 1)[1]
-        with open(class_metrics_out_name, mode="w", newline='') as file:
+
+        # save classwise metrics by appending `_classwise` to the output file name
+        class_metrics_out_name = out_name.with_name(
+            out_name.stem + "_classwise" + out_name.suffix
+        )
+
             writer = csv.writer(file)
             writer.writerow(["Class", "Accuracy", "IoU", "Precision", "Recall", "F1 Score"])
 
