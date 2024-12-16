@@ -43,7 +43,9 @@ def get_optimizer(optimizer, model, params, lr, momentum):
         # base_optimizer = optim.Adam
         return SAM(model.parameters(), base_optimizer, lr=lr, momentum=momentum)
     else:
-        raise ValueError(f"{optimizer} currently not supported, please choose a valid optimizer")
+        raise ValueError(
+            f"{optimizer} currently not supported, please choose a valid optimizer"
+        )
 
 
 def init_weights(model, init_type="normal", gain=0.02):
@@ -58,7 +60,9 @@ def init_weights(model, init_type="normal", gain=0.02):
         gain (float): The scaling factor for the initialized weights.
     """
     class_name = model.__class__.__name__
-    if hasattr(model, "weight") and (class_name.find("Conv") != -1 or class_name.find("Linear") != -1):
+    if hasattr(model, "weight") and (
+        class_name.find("Conv") != -1 or class_name.find("Linear") != -1
+    ):
         if init_type == "normal":
             init.normal_(model.weight.data, 0.0, gain)
         elif init_type == "xavier":
@@ -68,7 +72,9 @@ def init_weights(model, init_type="normal", gain=0.02):
         elif init_type == "orthogonal":
             init.orthogonal_(model.weight.data, gain=gain)
         else:
-            raise NotImplementedError(f"initialization method {init_type} is not implemented.")
+            raise NotImplementedError(
+                f"initialization method {init_type} is not implemented."
+            )
 
     if hasattr(model, "bias") and model.bias is not None:
         init.constant_(model.bias.data, 0.0)
@@ -109,7 +115,8 @@ class PolynomialLR(_LRScheduler):
             return [self.min_learning_rate for _ in self.base_lrs]
 
         return [
-            (base_lr - self.min_learning_rate) * ((1 - self.last_step / self.max_decay_steps) ** self.power)
+            (base_lr - self.min_learning_rate)
+            * ((1 - self.last_step / self.max_decay_steps) ** self.power)
             + self.min_learning_rate
             for base_lr in self.base_lrs
         ]
@@ -122,7 +129,8 @@ class PolynomialLR(_LRScheduler):
 
         if self.last_step <= self.max_decay_steps:
             decay_lrs = [
-                (base_lr - self.min_learning_rate) * ((1 - self.last_step / self.max_decay_steps) ** self.power)
+                (base_lr - self.min_learning_rate)
+                * ((1 - self.last_step / self.max_decay_steps) ** self.power)
                 + self.min_learning_rate
                 for base_lr in self.base_lrs
             ]
@@ -190,7 +198,9 @@ class ModelCompiler:
             print("----------GPU available----------")
             if self.gpu_devices:
                 torch.cuda.set_device(self.gpu_devices[0])
-                self.model = torch.nn.DataParallel(self.model, device_ids=self.gpu_devices)
+                self.model = torch.nn.DataParallel(
+                    self.model, device_ids=self.gpu_devices
+                )
         else:
             self.gpu = False
             print("----------No GPU available, using CPU instead----------")
@@ -199,8 +209,14 @@ class ModelCompiler:
         if params_init is None:
             init_weights(self.model, self.model_init_type, gain=0.01)
 
-        num_params = sum([p.numel() for p in self.model.parameters() if p.requires_grad])
-        print("total number of trainable parameters: {:2.1f}M".format(num_params / 1000000))
+        num_params = sum(
+            [p.numel() for p in self.model.parameters() if p.requires_grad]
+        )
+        print(
+            "total number of trainable parameters: {:2.1f}M".format(
+                num_params / 1000000
+            )
+        )
 
         if self.params_init:
             print("---------- Pre-trained model compiled successfully ----------")
@@ -225,9 +241,13 @@ class ModelCompiler:
         model_dict = self.model.state_dict()
 
         if "module" in next(iter(inparams.keys())):
-            inparams_filter = {k[7:]: v.cpu() for k, v in inparams.items() if k[7:] in model_dict}
+            inparams_filter = {
+                k[7:]: v.cpu() for k, v in inparams.items() if k[7:] in model_dict
+            }
         else:
-            inparams_filter = {k: v.cpu() for k, v in inparams.items() if k in model_dict}
+            inparams_filter = {
+                k: v.cpu() for k, v in inparams.items() if k in model_dict
+            }
 
         model_dict.update(inparams_filter)
 
@@ -306,12 +326,16 @@ class ModelCompiler:
         if lr_policy == "StepLR":
             step_size = kwargs.get("step_size", 3)
             gamma = kwargs.get("gamma", 0.98)
-            scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
+            scheduler = optim.lr_scheduler.StepLR(
+                optimizer, step_size=step_size, gamma=gamma
+            )
 
         elif lr_policy == "MultiStepLR":
             milestones = kwargs.get("milestones", [5, 10, 20, 35, 50, 70, 90])
             gamma = kwargs.get("gamma", 0.5)
-            scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=milestones, gamma=gamma)
+            scheduler = optim.lr_scheduler.MultiStepLR(
+                optimizer, milestones=milestones, gamma=gamma
+            )
 
         elif lr_policy == "ReduceLROnPlateau":
             mode = kwargs.get("mode", "min")
@@ -364,7 +388,9 @@ class ModelCompiler:
         val_loss = []
 
         if resume:
-            model_state_file = Path(self.checkpoint_dirpath, f"{resume_epoch}_checkpoint.pth.tar").resolve()
+            model_state_file = Path(
+                self.checkpoint_dirpath, f"{resume_epoch}_checkpoint.pth.tar"
+            ).resolve()
             if Path.is_file(model_state_file):
                 checkpoint = torch.load(model_state_file)
                 resume_epoch = checkpoint["epoch"]
@@ -395,7 +421,9 @@ class ModelCompiler:
                 device=self.device,
                 train_loss=train_loss,
             )
-            validate_one_epoch(valDataset, self.model, criterion, device=self.device, val_loss=val_loss)
+            validate_one_epoch(
+                valDataset, self.model, criterion, device=self.device, val_loss=val_loss
+            )
 
             # Update the scheduler
             if lr_policy in ["StepLR", "MultiStepLR"]:
@@ -422,14 +450,18 @@ class ModelCompiler:
                     {
                         "epoch": t + 1,
                         "state_dict": (
-                            self.model.state_dict() if len(self.gpu_devices) > 1 else self.model.module.state_dict()
+                            self.model.state_dict()
+                            if len(self.gpu_devices) > 1
+                            else self.model.module.state_dict()
                         ),
                         "scheduler": scheduler.state_dict(),
                         "optimizer": optimizer.state_dict(),
                         "train loss": train_loss,
                         "Evaluation loss": val_loss,
                     },
-                    Path(self.checkpoint_dirpath, f"{t + 1}_checkpoint.pth.tar").resolve(),
+                    Path(
+                        self.checkpoint_dirpath, f"{t + 1}_checkpoint.pth.tar"
+                    ).resolve(),
                 )
 
         writer.close()
@@ -464,11 +496,13 @@ class ModelCompiler:
         )
 
         duration_in_sec = (datetime.now() - start).seconds
-        print(f"---------------- Evaluation finished in {duration_in_sec}s ----------------")
+        print(
+            f"---------------- Evaluation finished in {duration_in_sec}s ----------------"
+        )
 
     def inference(self, test_data):
 
-        output_dir = Path(self.working_dir, self.out_dir)
+        output_dir = Path(self.working_dir, self.out_dir, "predictions")
         if not Path(output_dir).exists():
             Path.mkdir(output_dir, parents=True, exist_ok=True)
 
@@ -480,7 +514,9 @@ class ModelCompiler:
         do_prediction(test_data, self.model, output_dir, self.gpu)
 
         duration_in_sec = (datetime.now() - start).seconds
-        print(f"---------------- Prediction finished in {duration_in_sec}s ----------------")
+        print(
+            f"---------------- Prediction finished in {duration_in_sec}s ----------------"
+        )
 
     def save(self, save_object="params"):
         """
@@ -493,14 +529,17 @@ class ModelCompiler:
 
         # If a user tries to save the model without training it, raise an error.
         if self.checkpoint_dirpath is None:
-            raise ValueError("Model has not been trained yet. Please train the model first.")
+            raise ValueError(
+                "Model has not been trained yet. Please train the model first."
+            )
 
         print(f"Saving params to {self.checkpoint_dirpath}")
         final_state_file_name = f"{self.model_name}_final_state.pth"
         if save_object == "params":
             if len(self.gpu_devices) > 1:
                 torch.save(
-                    self.model.module.state_dict(), Path(self.checkpoint_dirpath, final_state_file_name).resolve()
+                    self.model.module.state_dict(),
+                    Path(self.checkpoint_dirpath, final_state_file_name).resolve(),
                 )
             else:
                 torch.save(
@@ -508,10 +547,15 @@ class ModelCompiler:
                     Path(self.checkpoint_dirpath, final_state_file_name).resolve(),
                 )
 
-            print("--------------------- Model parameters is saved to disk ---------------------")
+            print(
+                "--------------------- Model parameters is saved to disk ---------------------"
+            )
 
         elif save_object == "model":
-            torch.save(self.model, Path(self.checkpoint_dirpath, final_state_file_name).resolve())
+            torch.save(
+                self.model,
+                Path(self.checkpoint_dirpath, final_state_file_name).resolve(),
+            )
 
         else:
             raise ValueError("Improper object type.")
