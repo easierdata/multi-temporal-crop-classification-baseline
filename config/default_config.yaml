@@ -6,11 +6,11 @@ tensorboard_log_path: ./tensorboard-logs
 # `dataset_path` is the source directory containing the training dataset content.
 # `dataset_dir` is the name of the directory containing the images that will be used for training, validation, or inference.
 # The csv files should contain the chip IDs for training, validation, and testing.
-dataset_path: /path/to/training/dataset/directory
-dataset_dir: Enter name of the directory containing the images
-train_csv_path: /path/to/csv/file/with/chip_ids/filename.csv
-validation_csv_path: /path/to/csv/file/with/chip_ids/filename.csv
-inference_csv_path: /path/to/csv/file/with/chip_ids/filename.csv
+dataset_path: C:\github\client_projects\umd\multi-temporal-crop-classification-training-data\data\training_datasets\corn-belt
+dataset_dir: chips_filtered
+train_csv_path: c:\github\client_projects\umd\multi-temporal-crop-classification-training-data\data\training_datasets\corn-belt\train_ids.csv
+validation_csv_path: C:\github\client_projects\umd\multi-temporal-crop-classification-training-data\data\training_datasets\corn-belt\val_ids.csv
+inference_csv_path: C:\github\client_projects\umd\multi-temporal-crop-classification-training-data\data\training_datasets\corn-belt\val_ids.csv
 
 apply_normalization: true
 normal_strategy: z_value
@@ -40,8 +40,8 @@ use_skipAtt: false
 train_dropout_rate: 0.15
 
 # Model compiler params
-working_dir: /path/to/working/directory/to/store/results
-out_dir: Enter name of the directory to store output results
+working_dir: C:\github\client_projects\umd\multi-temporal-crop-classification-training-data\data\training_datasets\corn-belt
+out_dir: results
 class_mapping:
   0: Unknown
   1: Natural Vegetation
@@ -57,6 +57,8 @@ class_mapping:
   11: Cotton
   12: Sorghum
   13: Other
+# Currently, multiple GPU's are not supported.
+# If you have multiple GPU's, please specify the device ID of the one you want to use.
 gpuDevices:
   - 0
 init_type: kaiming
@@ -69,26 +71,24 @@ optimizer: sam
 LR: 0.011
 LR_policy: PolynomialLR
 criterion:
-  name: BalancedCrossEntropyLoss
-  weight: null
-  ignore_index: 0
-  # name: TverskyFocalLoss
-  # weight:
-  #   - 0.0182553
-  #   - 0.03123664
-  #   - 0.02590038
-  #   - 0.03026126
-  #   - 0.04142966
-  #   - 0.04371284
-  #   - 0.15352935
-  #   - 0.07286951
-  #   - 0.10277024
-  #   - 0.10736637
-  #   - 0.1447082
-  #   - 0.17132445
-  #   - 0.0566358
-  # ignore_index: 0
-  # gamma: 0.9
+  name: TverskyFocalLoss
+  parameters:
+    ignore_index: 0
+    gamma: 0.9
+    # weight:
+    #   - 0.0182553
+    #   - 0.03123664
+    #   - 0.02590038
+    #   - 0.03026126
+    #   - 0.04142966
+    #   - 0.04371284
+    #   - 0.15352935
+    #   - 0.07286951
+    #   - 0.10277024
+    #   - 0.10736637
+    #   - 0.1447082
+    #   - 0.17132445
+    #   - 0.0566358
 
 momentum: 0.95
 checkpoint_interval: 5
