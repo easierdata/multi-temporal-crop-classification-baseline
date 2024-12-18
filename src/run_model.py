@@ -20,10 +20,29 @@ try:
     import utils as u
     from models.unet import Unet
     from model_compiler import ModelCompiler
-    from custom_loss_functions import *
+    from custom_loss_functions import (
+        BalancedCrossEntropyLoss,
+        BinaryTverskyFocalLoss,
+        TverskyFocalLoss,
+        BalancedTverskyFocalLoss,
+        TverskyFocalCELoss,
+        BalancedTverskyFocalCELoss,
+    )
 except ModuleNotFoundError:
     print("Module not found")
     pass
+
+# dictionary to map criterion names to their corresponding classes.
+# These loss functions are defined in the custom_loss_functions.py file
+CRITERION_DICT = {
+    "BalancedCrossEntropyLoss": BalancedCrossEntropyLoss,
+    "BinaryTverskyFocalLoss": BinaryTverskyFocalLoss,
+    "TverskyFocalLoss": TverskyFocalLoss,
+    "BalancedTverskyFocalLoss": BalancedTverskyFocalLoss,
+    "TverskyFocalCELoss": TverskyFocalCELoss,
+    "BalancedTverskyFocalCELoss": BalancedTverskyFocalCELoss,
+    "CrossEntropyLoss": nn.CrossEntropyLoss,
+}
 
 
 def timeit(func):
@@ -118,7 +137,16 @@ def compile_model(model, config):
     )
 
 
-@timeit
+def get_criterion(criterion_name, criterion_params):
+    if criterion_name in CRITERION_DICT:
+        criterion_class = CRITERION_DICT[criterion_name]
+        # Extract only the parameters that are provided in the configuration
+        params = {k: v for k, v in criterion_params.items() if v is not None}
+        return criterion_class(**params)
+    else:
+        raise ValueError(f"Unsupported criterion: {criterion_name}")
+
+
 def train_model(compiled_model, train_loader, val_loader, config):
     criterion_name = config["criterion"]["name"]
     weight = config["criterion"]["weight"]
