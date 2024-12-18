@@ -197,6 +197,8 @@ class ModelCompiler:
             self.gpu = True
             print("----------GPU available----------")
             if self.gpu_devices:
+                # Multiple GPUs are not supported for now.
+                # https://github.com/ClarkCGA/multi-temporal-crop-classification-baseline/issues/9#issuecomment-1904653491
                 torch.cuda.set_device(self.gpu_devices[0])
                 self.model = torch.nn.DataParallel(
                     self.model, device_ids=self.gpu_devices
@@ -437,7 +439,10 @@ class ModelCompiler:
                 scheduler.step(t)
                 print("LR: {}".format(optimizer.param_groups[0]["lr"]))
 
-            print("time:", (datetime.now() - start_epoch).seconds)
+            epoch_duration = (datetime.now() - start_epoch).seconds
+            e_hours, e_remainder = divmod(epoch_duration, 3600)
+            e_minutes, e_seconds = divmod(e_remainder, 60)
+            print(f"Time: {e_hours:02d}h:{e_minutes:02d}m:{e_seconds:05.2f}s")
 
             writer.add_scalars(
                 "Loss",
@@ -450,9 +455,9 @@ class ModelCompiler:
                     {
                         "epoch": t + 1,
                         "state_dict": (
-                            self.model.state_dict()
-                            if len(self.gpu_devices) > 1
-                            else self.model.module.state_dict()
+                            self.model.module.state_dict()
+                            if isinstance(self.model, torch.nn.DataParallel)
+                            else self.model.state_dict()
                         ),
                         "scheduler": scheduler.state_dict(),
                         "optimizer": optimizer.state_dict(),
@@ -466,9 +471,13 @@ class ModelCompiler:
 
         writer.close()
 
-        duration_in_sec = (datetime.now() - start).seconds
-        duration_format = str(timedelta(seconds=duration_in_sec))
-        print(f"----------- Training finished in {duration_format} -----------")
+        end_training = datetime.now()
+        training_duration = end_training - start
+        hours, remainder = divmod(training_duration.seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+        print(
+            f"----------- Training finished in {hours:02d}h:{minutes:02d}m:{seconds:05.2f}s -----------"
+        )
 
     def accuracy_evaluation(self, eval_dataset, filename):
         """

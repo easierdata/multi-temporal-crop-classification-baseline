@@ -1,4 +1,6 @@
 import sys
+import time
+import traceback
 import torch
 import yaml
 import argparse
@@ -18,14 +20,54 @@ try:
     import utils as u
     from models.unet import Unet
     from model_compiler import ModelCompiler
-    from custom_loss_functions import *
+    from custom_loss_functions import (
+        BalancedCrossEntropyLoss,
+        BinaryTverskyFocalLoss,
+        TverskyFocalLoss,
+        BalancedTverskyFocalLoss,
+        TverskyFocalCELoss,
+        BalancedTverskyFocalCELoss,
+    )
 except ModuleNotFoundError:
     print("Module not found")
     pass
 
+# dictionary to map criterion names to their corresponding classes.
+# These loss functions are defined in the custom_loss_functions.py file
+CRITERION_DICT = {
+    "BalancedCrossEntropyLoss": BalancedCrossEntropyLoss,
+    "BinaryTverskyFocalLoss": BinaryTverskyFocalLoss,
+    "TverskyFocalLoss": TverskyFocalLoss,
+    "BalancedTverskyFocalLoss": BalancedTverskyFocalLoss,
+    "TverskyFocalCELoss": TverskyFocalCELoss,
+    "BalancedTverskyFocalCELoss": BalancedTverskyFocalCELoss,
+    "CrossEntropyLoss": nn.CrossEntropyLoss,
+}
+
+
+def timeit(func):
+    def wrapper(*args, **kwargs):
+        start_time = time.time()
+        try:
+            result = func(*args, **kwargs)
+            end_time = time.time()
+            print(
+                f"Function '{func.__name__}' executed in {end_time - start_time:.4f} seconds"
+            )
+            return result
+        except Exception as e:
+            end_time = time.time()
+            print(
+                f"Function '{func.__name__}' failed after {end_time - start_time:.4f} seconds"
+            )
+            print(f"Error: {e}")
+            traceback.print_exc()
+            raise e
+
+    return wrapper
+
 
 def load_config(yaml_config_path, num_time_points):
-    print(yaml_config_path)
     with open(yaml_config_path, "r") as file:
         config = yaml.load(file, Loader=yaml.SafeLoader)
 
@@ -52,6 +94,7 @@ def load_config(yaml_config_path, num_time_points):
     return config
 
 
+# @timeit
 def prepare_data(config, usage):
     dataset = CropData(
         src_dir=config["dataset_path"],
@@ -99,18 +142,22 @@ def compile_model(model, config):
     )
 
 
-def train_model(compiled_model, train_loader, val_loader, config):
-    criterion_name = config["criterion"]["name"]
-    weight = config["criterion"]["weight"]
-    ignore_index = config["criterion"]["ignore_index"]
-    gamma = config["criterion"]["gamma"]
-
-    if criterion_name == "TverskyFocalLoss":
-        criterion = TverskyFocalLoss(
-            weight=weight, ignore_index=ignore_index, gamma=gamma
-        )
+def get_criterion(criterion_name, criterion_params):
+    if criterion_name in CRITERION_DICT:
+        criterion_class = CRITERION_DICT[criterion_name]
+        # Extract only the parameters that are provided in the configuration
+        params = {k: v for k, v in criterion_params.items() if v is not None}
+        return criterion_class(**params)
     else:
-        criterion = nn.CrossEntropyLoss(weight=weight, ignore_index=ignore_index)
+        raise ValueError(f"Unsupported criterion: {criterion_name}")
+
+
+# @timeit
+def train_model(compiled_model, train_loader, val_loader, config):
+    # Initialize the criterion for the loss function
+    criterion_name = config["criterion"]["name"]
+    criterion_params = config["criterion"]["parameters"]
+    criterion = get_criterion(criterion_name, criterion_params)
 
     compiled_model.fit(
         train_loader,
@@ -152,6 +199,7 @@ def meta_handling_collate_fn(batch):
     return images, labels, img_ids, img_metas
 
 
+@timeit
 def main(yaml_config_path, num_time_points, mode):
     config = load_config(yaml_config_path, num_time_points)
 
@@ -208,7 +256,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--config",
-        default=".\config\default_config.yaml",
+        default=("./config/default_config.yaml"),
         help="Path to the config file",
     )
     parser.add_argument(
