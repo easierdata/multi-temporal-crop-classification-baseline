@@ -51,19 +51,23 @@ def timeit(func):
         try:
             result = func(*args, **kwargs)
             end_time = time.time()
-            print(f"Function '{func.__name__}' executed in {end_time - start_time:.4f} seconds")
+            print(
+                f"Function '{func.__name__}' executed in {end_time - start_time:.4f} seconds"
+            )
             return result
         except Exception as e:
             end_time = time.time()
-            print(f"Function '{func.__name__}' failed after {end_time - start_time:.4f} seconds")
+            print(
+                f"Function '{func.__name__}' failed after {end_time - start_time:.4f} seconds"
+            )
             print(f"Error: {e}")
             traceback.print_exc()
             raise e
+
     return wrapper
 
 
 def load_config(yaml_config_path, num_time_points):
-    print(yaml_config_path)
     with open(yaml_config_path, "r") as file:
         config = yaml.load(file, Loader=yaml.SafeLoader)
 
@@ -89,7 +93,8 @@ def load_config(yaml_config_path, num_time_points):
 
     return config
 
-@timeit
+
+# @timeit
 def prepare_data(config, usage):
     dataset = CropData(
         src_dir=config["dataset_path"],
@@ -192,6 +197,7 @@ def meta_handling_collate_fn(batch):
     images = torch.stack(images, dim=0)
     labels = torch.stack(labels, dim=0)
     return images, labels, img_ids, img_metas
+
 
 @timeit
 def main(yaml_config_path, num_time_points, mode):
