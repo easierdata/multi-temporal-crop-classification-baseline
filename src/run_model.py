@@ -147,17 +147,12 @@ def get_criterion(criterion_name, criterion_params):
         raise ValueError(f"Unsupported criterion: {criterion_name}")
 
 
+# @timeit
 def train_model(compiled_model, train_loader, val_loader, config):
+    # Initialize the criterion for the loss function
     criterion_name = config["criterion"]["name"]
-    weight = config["criterion"]["weight"]
-    ignore_index = config["criterion"]["ignore_index"]
-
-    if criterion_name == "TverskyFocalLoss":
-        criterion = TverskyFocalLoss(
-            weight=weight, ignore_index=ignore_index, gamma=config["criterion"]["gamma"]
-        )
-    else:
-        criterion = nn.CrossEntropyLoss(weight=weight, ignore_index=ignore_index)
+    criterion_params = config["criterion"]["parameters"]
+    criterion = get_criterion(criterion_name, criterion_params)
 
     compiled_model.fit(
         train_loader,
