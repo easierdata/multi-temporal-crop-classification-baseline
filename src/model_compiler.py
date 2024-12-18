@@ -196,7 +196,7 @@ class ModelCompiler:
         if self.device.type == "cuda":
             self.gpu = True
             print("----------GPU available----------")
-            if self.gpu_devices:
+            if self.gpu_devices and len(self.gpu_devices) > 1:
                 torch.cuda.set_device(self.gpu_devices[0])
                 self.model = torch.nn.DataParallel(
                     self.model, device_ids=self.gpu_devices
@@ -450,9 +450,9 @@ class ModelCompiler:
                     {
                         "epoch": t + 1,
                         "state_dict": (
-                            self.model.state_dict()
-                            if len(self.gpu_devices) > 1
-                            else self.model.module.state_dict()
+                            self.model.module.state_dict()
+                            if isinstance(self.model, torch.nn.DataParallel)
+                            else self.model.state_dict()
                         ),
                         "scheduler": scheduler.state_dict(),
                         "optimizer": optimizer.state_dict(),
