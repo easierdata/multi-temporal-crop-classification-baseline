@@ -437,7 +437,9 @@ class ModelCompiler:
                 scheduler.step(t)
                 print("LR: {}".format(optimizer.param_groups[0]["lr"]))
 
-            print("time:", (datetime.now() - start_epoch).seconds)
+            epoch_duration = (datetime.now() - start_epoch).seconds
+            minutes, seconds = divmod(epoch_duration, 60)
+            print(f"time: {minutes}m {seconds}s")
 
             writer.add_scalars(
                 "Loss",
@@ -466,9 +468,11 @@ class ModelCompiler:
 
         writer.close()
 
-        duration_in_sec = (datetime.now() - start).seconds
-        duration_format = str(timedelta(seconds=duration_in_sec))
-        print(f"----------- Training finished in {duration_format} -----------")
+        end_training = datetime.now()
+        training_duration = end_training - start
+        hours, remainder = divmod(training_duration.seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+        print(f"----------- Training finished in {hours}h {minutes}m {seconds}s -----------")
 
     def accuracy_evaluation(self, eval_dataset, filename):
         """
