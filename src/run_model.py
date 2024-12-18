@@ -1,4 +1,6 @@
 import sys
+import time
+import traceback
 import torch
 import yaml
 import argparse
@@ -22,6 +24,23 @@ try:
 except ModuleNotFoundError:
     print("Module not found")
     pass
+
+
+def timeit(func):
+    def wrapper(*args, **kwargs):
+        start_time = time.time()
+        try:
+            result = func(*args, **kwargs)
+            end_time = time.time()
+            print(f"Function '{func.__name__}' executed in {end_time - start_time:.4f} seconds")
+            return result
+        except Exception as e:
+            end_time = time.time()
+            print(f"Function '{func.__name__}' failed after {end_time - start_time:.4f} seconds")
+            print(f"Error: {e}")
+            traceback.print_exc()
+            raise e
+    return wrapper
 
 
 def load_config(yaml_config_path, num_time_points):
@@ -51,7 +70,7 @@ def load_config(yaml_config_path, num_time_points):
 
     return config
 
-
+@timeit
 def prepare_data(config, usage):
     dataset = CropData(
         src_dir=config["dataset_path"],
@@ -99,6 +118,7 @@ def compile_model(model, config):
     )
 
 
+@timeit
 def train_model(compiled_model, train_loader, val_loader, config):
     criterion_name = config["criterion"]["name"]
     weight = config["criterion"]["weight"]
@@ -150,7 +170,7 @@ def meta_handling_collate_fn(batch):
     labels = torch.stack(labels, dim=0)
     return images, labels, img_ids, img_metas
 
-
+@timeit
 def main(yaml_config_path, num_time_points, mode):
     config = load_config(yaml_config_path, num_time_points)
 
@@ -207,7 +227,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--config",
-        default=".\config\default_config.yaml",
+        default=("./config/default_config.yaml"),
         help="Path to the config file",
     )
     parser.add_argument(
