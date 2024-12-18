@@ -440,8 +440,9 @@ class ModelCompiler:
                 print("LR: {}".format(optimizer.param_groups[0]["lr"]))
 
             epoch_duration = (datetime.now() - start_epoch).seconds
-            minutes, seconds = divmod(epoch_duration, 60)
-            print(f"time: {minutes}m {seconds}s")
+            e_hours, e_remainder = divmod(epoch_duration, 3600)
+            e_minutes, e_seconds = divmod(e_remainder, 60)
+            print(f"Time: {e_hours:02d}h:{e_minutes:02d}m:{e_seconds:05.2f}s")
 
             writer.add_scalars(
                 "Loss",
@@ -474,7 +475,9 @@ class ModelCompiler:
         training_duration = end_training - start
         hours, remainder = divmod(training_duration.seconds, 3600)
         minutes, seconds = divmod(remainder, 60)
-        print(f"----------- Training finished in {hours}h {minutes}m {seconds}s -----------")
+        print(
+            f"----------- Training finished in {hours:02d}h:{minutes:02d}m:{seconds:05.2f}s -----------"
+        )
 
     def accuracy_evaluation(self, eval_dataset, filename):
         """
