@@ -69,23 +69,26 @@ optimizer: sam
 LR: 0.011
 LR_policy: PolynomialLR
 criterion:
-  name: TverskyFocalLoss
-  weight:
-    - 0.0182553
-    - 0.03123664
-    - 0.02590038
-    - 0.03026126
-    - 0.04142966
-    - 0.04371284
-    - 0.15352935
-    - 0.07286951
-    - 0.10277024
-    - 0.10736637
-    - 0.1447082
-    - 0.17132445
-    - 0.0566358
+  name: BalancedCrossEntropyLoss
+  weight: null
   ignore_index: 0
-  gamma: 0.9
+  # name: TverskyFocalLoss
+  # weight:
+  #   - 0.0182553
+  #   - 0.03123664
+  #   - 0.02590038
+  #   - 0.03026126
+  #   - 0.04142966
+  #   - 0.04371284
+  #   - 0.15352935
+  #   - 0.07286951
+  #   - 0.10277024
+  #   - 0.10736637
+  #   - 0.1447082
+  #   - 0.17132445
+  #   - 0.0566358
+  # ignore_index: 0
+  # gamma: 0.9
 
 momentum: 0.95
 checkpoint_interval: 5
