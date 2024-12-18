@@ -103,11 +103,10 @@ def train_model(compiled_model, train_loader, val_loader, config):
     criterion_name = config["criterion"]["name"]
     weight = config["criterion"]["weight"]
     ignore_index = config["criterion"]["ignore_index"]
-    gamma = config["criterion"]["gamma"]
 
     if criterion_name == "TverskyFocalLoss":
         criterion = TverskyFocalLoss(
-            weight=weight, ignore_index=ignore_index, gamma=gamma
+            weight=weight, ignore_index=ignore_index, gamma=config["criterion"]["gamma"]
         )
     else:
         criterion = nn.CrossEntropyLoss(weight=weight, ignore_index=ignore_index)
