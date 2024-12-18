@@ -196,7 +196,9 @@ class ModelCompiler:
         if self.device.type == "cuda":
             self.gpu = True
             print("----------GPU available----------")
-            if self.gpu_devices and len(self.gpu_devices) > 1:
+            if self.gpu_devices:
+                # Multiple GPUs are not supported for now.
+                # https://github.com/ClarkCGA/multi-temporal-crop-classification-baseline/issues/9#issuecomment-1904653491
                 torch.cuda.set_device(self.gpu_devices[0])
                 self.model = torch.nn.DataParallel(
                     self.model, device_ids=self.gpu_devices
